@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JavaScript Illustration</title>
+
+    <meta charset="UTF-8">
+    <meta name="description" content="sample web page for JS illustrations">
+    <meta name="keywords" content="JS, JavaScript, DOM">
+    <meta name="author" content="imam">
+
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- alert box section -->
+    <div id="alert" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span id="alertmsg"></span>
+        <button type="button" class="close" aria-label="Close" onclick="hidealert();">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <!-- users list heading section -->
+    <h3 class="mt-3">Users List</h3>
+
+    <!-- Add New User Section -->
+    <div id="addnewuser" class="mt-3">
+        <form action="#" class="container">
+            <div class="form-row">
+                <div class="col-md-4">
+                    <label for="uid">ID :</label>
+                    <input type="text" class="form-control" id="uid" name="uid" placeholder="Your ID" onfocus="changeclr(event);" onblur="changeclr(event);">
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="email">Email :</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="your_email@gmail.com" onfocus="changeclr(event);" onblur="changeclr(event);">
+                </div>
+                <div class="col-md-4">
+                    <label for="city">City :</label>
+                    <select class="form-control" id="city" onfocus="changeclr(event);" onblur="changeclr(event);">
+                        <option value="None" selected>None</option>
+                        <option value="Dhaka">Dhaka</option>
+                        <option value="Chittagong">Chittagong</option>
+                        <option value="Rajshahi">Rajshahi</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row mt-2">
+                <div class="col-md-4"></div>
+                <div class="col-md-6 mx-auto py-2">
+                    <button type="button" class="btn btn-sm btn-primary" id="addbtn" onclick="validate();">Add New User</button>
+                </div>
+            </div>    
+        </form>
+    </div>
+
+    <div id="showuser" class="mt-3">
+        <h4 class="text-center">Show Users List</h4>
+        <div id="tablecontainer">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th style="width:100px;"><a id="selectbtn" href="#" onclick="selectall(event);">Check All</a></th>
+                        <th>User ID</th>
+                        <th>Email Address</th>
+                        <th>Current City</th>
+                        <th style="width:100px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ulist"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        ///calling the function to initially draw the table
+        drawusertable();
+    </script>
+
+    <script>
+	/* this function will be called when the close btn of alert box is clicked */
+		function hidealert(){
+			document.getElementById("alertmsg").innerHTML="";
+			document.getElementById("alert").style.display="none";
+		}
+	
+		/* initially all the arrays contain no data. The data will be saved in those arrays */
+		var userid=[];
+		var useremail=[];
+		var usercity=[];
+		
+		/* to change the color of add new user section */
+		function changeclr(event){
+			if(event.type=="focus"){
+				document.getElementById("addnewuser").style.backgroundColor="white";
+				event.target.style.backgroundColor="#e6fff9";
+			}
+			else{
+				document.getElementById("addnewuser").style.backgroundColor="#e6fff9";
+				event.target.style.backgroundColor="white";
+			}
+		}
+		
+		/* checking whether or not the inputted data is valid or not */
+		function validate(){
+			document.getElementById("alertmsg").innerHTML="";
+			document.getElementById("alert").style.display="none";
+			
+			var id=document.querySelectorAll("#uid")[0].value;
+              
+			if (id === "" || isNaN(id) || !Number.isInteger(parseFloat(id))) {
+                 document.getElementById("alert").style.display = "block";
+                 document.getElementById("alertmsg").innerHTML = "Invalid <b>ID</b> field (must be an integer)";
+                return;
+            }
+
+			else if(userid.indexOf(id)!=-1){
+				/*already this id prople exists*/
+				document.getElementById("alert").style.display="block";
+				document.getElementById("alertmsg").innerHTML="<b>ID</b> already exists";
+				return;
+			}
+			
+			var email=document.getElementById("email").value;
+			if(email.indexOf("@")==-1 || email.indexOf(".com")==-1){
+				document.getElementById("alert").style.display="block";
+				document.getElementById("alertmsg").innerHTML=" Invalid <b>email</b> address";
+				return;
+			}
+			
+			var city=document.getElementById("city").value;
+			if(city=="None"){
+				document.getElementById("alert").style.display="block";
+				document.getElementById("alertmsg").innerHTML="Choose a <b>city</b> name";
+				return;
+			}
+			
+			/*if previous all the if clauses are false then your data is valid data so save the data to the corresponding arrays*/
+			
+			userid.push(id);
+			useremail.push(email);
+			usercity.push(city);
+			//after adding new data you need to clean the previous table and redraw the table again 
+			drawusertable();
+			
+		}
+		
+		//redrawing user table again
+		function drawusertable(){
+			/*at first cleaning the whole table by setting innerHTML="" */
+			document.getElementById("ulist").innerHTML="";
+				
+			if(userid.length==0){
+				/* If the table is empty */
+				var element=document.createElement('tr');
+				element.id="norec";
+				element.innerHTML="<td colspan='5' style='text-align:center;color:red;'>No Data exists...</td>";
+				document.getElementById("ulist").appendChild(element);
+			}
+			else{
+				/* showing the table result in sorted order */
+				userid.sort(function(a, b){return a-b});
+				var loop;
+				for(loop=0;loop<userid.length;loop++){
+					var elm=document.createElement("tr");
+					elm.innerHTML="<td style='text-align:center;'>"
+									+"<input type='checkbox' id='"+userid[loop]+"' value='"+userid[loop]+"'></td>"
+									+"<td>"+userid[loop]+"</td>"
+									+"<td>"+useremail[loop]+"</td>"
+									+"<td>"+usercity[loop]+"</td>"
+									// +"<td><button class='btn btn-danger' type='button' onclick='deletedata("+userid[loop]+")'><i class='fa fa-trash' aria-hidden='true'></i></button></td>"
+                                    +"<td><button class='btn btn-danger' type='button' onclick='modal()'><i class='fa fa-trash' aria-hidden='true'></i></button></td>" 
+					document.getElementById('ulist').appendChild(elm);
+				}
+			}
+		}
+
+        // modal for deleting a row
+        function modal() {
+			
+			var overlay = document.createElement("div");
+			overlay.style.position = "absolute";
+			overlay.style.width = "100%";
+			overlay.style.height = "100%";
+			overlay.style.top = "0";
+			overlay.style.left = "0";
+			overlay.style.background = "rgba(0,0,0,.5)";
+			
+			document.body.appendChild(overlay);
+
+
+			var main  = document.createElement("div");
+			main.style.width = "400px";
+			main.style.height = "200px";
+			main.style.background = "#ffaa00";
+			main.style.margin = "0 auto";
+			main.style.position = "relative";
+			main.style.top = "50%";
+			main.style.borderRadius = "3px";
+			main.style.padding = "15px";
+			main.style.transform = "translateY(-50%)";
+
+			overlay.appendChild(main);
+
+			var ttl = document.createElement("h3");
+
+			ttl.style.margin = "0";
+			ttl.paddingBottom = "15px";
+			ttl.innerHTML = "Are you sure?";
+			main.appendChild(ttl);
+
+			var pr = document.createElement("p");
+			pr.innerHTML = "This will remove the data!";
+			main.appendChild(pr);
+
+			var btn = document.createElement("button");
+            btn.setAttribute("type", "button");
+            btn.textContent = "Delete"; // Use textContent to set the button text
+            btn.className = "btn btn-sm btn-danger"; // Use className to set the class
+            btn.style.marginTop = "80px";
+            main.appendChild(btn);
+
+            btn.onclick = function () {
+                document.body.removeChild(overlay);
+                deletedata("+userid[loop]+");
+            };
+
+            var btn = document.createElement("button");
+            btn.setAttribute("type", "button");
+            btn.textContent = "Cancel"; // Use textContent to set the button text
+            btn.className = "btn btn-sm btn-info"; // Use className to set the class
+            btn.style.marginTop = "80px";
+            btn.marginLeft= "80px";
+            main.appendChild(btn);
+
+            btn.onclick = function () {
+                document.body.removeChild(overlay);
+            };
+
+		}
+		
+		///to select all the check boxes when ALL link is clicked
+		function selectall(event) {
+
+            if (userid.length > 0 && useremail.length > 0 && usercity !== "None") {
+                var curtext = event.target.innerHTML;
+                if (curtext === "Check All") {
+                    /* checking all checkboxes */
+                    event.target.innerHTML = "Uncheck All";
+                    var allcheckboxes = document.querySelectorAll("#ulist input[type='checkbox']");
+                    for (var i = 0; i < allcheckboxes.length; i++) {
+                        allcheckboxes[i].checked = true;
+                    }
+                } else {
+                    /* unchecking all check boxes */
+                    event.target.innerHTML = "Check All";
+                    var allcheckboxes = document.querySelectorAll("#ulist input[type='checkbox']");
+                    for (var i = 0; i < allcheckboxes.length; i++) {
+                        allcheckboxes[i].checked = false;
+                    }
+                }
+            } 
+            else {
+                document.getElementById("alert").style.display = "block";
+                document.getElementById("alertmsg").innerHTML = "There are no data to select!";
+                return;
+            }
+        }
+
+		
+		///this function will be called when the delete btn is clicked
+		function deletedata(uid){
+			console.log(userid);
+			// if(window.confirm("Do you want to delete the data?")==true){
+				var index=userid.indexOf(uid.toString());
+				console.log(index);
+				
+				userid.splice(index,1); /// deleting user id from userid array
+				useremail.splice(index,1);///deleting user email from useremail array 
+				usercity.splice(index,1); ///deleting user city from usercity array
+				
+				drawusertable();			/// redrawing the table after deletion
+			
+			// }
+		}
+		
+	</script>
+</body>
+
+</html>
